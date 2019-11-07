@@ -87,7 +87,6 @@ def U_replaced_by_T(table):
 def UpdatedDic(table):
     dic = {}
     for d_aa, d_codon in updatedTable.items():
-
         s = max(d_codon.values())
         for (key, value) in d_codon.items():
             if value == s:
@@ -134,7 +133,7 @@ def changesTable(sequence,OPSeq):
     for i, j in zip(range(0, len(listOfOldCodons)), range(0, len(listOfOPcodons))):
         freqDiff.append(Decimal(changedOpDic[listOfOPcodons[j]]) - Decimal(changedSeqDic[listOfOldCodons[i]]))
     x = PrettyTable()
-    column_names = ["City name", "Area", "Population", "Annual Rainfall","FDG","G","f"]
+    column_names = ["#", "POS", "Old", "New","diff,"amino","Fractions"]
     x.add_column(column_names[0], [i for i in range(1, counter+1)])
     x.add_column(column_names[1], [listOfIndexes [i] for i in range(0, len(listOfIndexes ))])
     x.add_column(column_names[2], [listOfOldCodons[i] for i in range(0, len(listOfOldCodons))])
