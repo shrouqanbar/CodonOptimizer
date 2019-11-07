@@ -103,7 +103,7 @@ def translateOptimizedSeq(protein):
 
 
 
-#Draw changes Table
+#Print changes Table in console 
 def changesTable(sequence,OPSeq):
     listOfOldCodons = []
     listOfOPcodons = []
@@ -146,25 +146,7 @@ def changesTable(sequence,OPSeq):
 #html output
 #print(x.get_html_string())
 
-if __name__ == '__main__':
-  #_kazusa_url = ("http://www.kazusa.or.jp/codon/cgi-bin/showcodon.cgi?species=9031&aa=15&style=N")
-  fileName=input("Enter FASTA Sequence :")
-  file = open(fileName, 'r')
-  sequence=parse_fasta(file)
-  proteinSeq = DNA_translation(sequence)
-  _kazusa_url = input("Paste Codon Usage Bias Table (Standard Format) : ")
-  print("Sequences before and after optimization: \n", "Protein Sequence: \n",proteinSeq)
-  print("Original Sequence [FASTA]: \n",sequence)
-  codonsTable = download_codons_table(_kazusa_url)
-  updatedTable = U_replaced_by_T(codonsTable)
-  OptimizedCodon = translateOptimizedSeq(proteinSeq)
-  print("Optimized Sequence [FASTA]: \n",OptimizedCodon)
-  print("Changes Table in details: \n")
-  print(changesTable(sequence,OptimizedCodon))
-  file.close()
-
-
-#Another way to produce Changes Table in details
+#Another way to draw Changes Table in details
 '''def changesTable(sequence,OPSeq):
     headerColor = 'white'
     listOfOldCodons = []
@@ -223,3 +205,23 @@ if __name__ == '__main__':
 
     return fig.show()
 '''
+
+if __name__ == '__main__':
+  #_kazusa_url = ("http://www.kazusa.or.jp/codon/cgi-bin/showcodon.cgi?species=9031&aa=15&style=N")
+  fileName=input("Enter FASTA Sequence :")
+  file = open(fileName, 'r')
+  sequence=parse_fasta(file)
+  proteinSeq = DNA_translation(sequence)
+  _kazusa_url = input("Paste Codon Usage Bias Table (Standard Format) : ")
+  print("Sequences before and after optimization: \n", "Protein Sequence: \n",proteinSeq)
+  print("Original Sequence [FASTA]: \n",sequence)
+  codonsTable = download_codons_table(_kazusa_url)
+  updatedTable = U_replaced_by_T(codonsTable)
+  OptimizedCodon = translateOptimizedSeq(proteinSeq)
+  print("Optimized Sequence [FASTA]: \n",OptimizedCodon)
+  print("Changes Table in details: \n")
+  print(changesTable(sequence,OptimizedCodon))
+  file.close()
+
+
+
