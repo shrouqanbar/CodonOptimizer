@@ -102,65 +102,7 @@ def translateOptimizedSeq(protein):
     return OPSeq
 
 
-#To produce Changes Table in details
-'''def changesTable(sequence,OPSeq):
-    headerColor = 'white'
-    listOfOldCodons = []
-    listOfOPcodons = []
-    listOfChangedAA = []  # changed amino acids
-    fractionsDic = {}  # fractions
-    changedSeqDic = {}  # changed seq codons
-    changedOpDic = {}  # changed optimized codons
-    listOfIndexes = []  # index of optimized codons
-    counter = 0
-    for i, j in zip(range(0, len(sequence), 3), range(0, len(OPSeq), 3)):
-        originalCodon = sequence[i:i + 3]
-        Optimizedcodon = OPSeq[j:j + 3]
-        if originalCodon != Optimizedcodon:
-            listOfIndexes.append(i + 1)
-            counter += 1
-            listOfOldCodons.append(originalCodon)
-            listOfOPcodons.append(Optimizedcodon)
-            for aa, aa_data in updatedTable.items():
-                for k, v in aa_data.items():
-                    if k == originalCodon:
-                        listOfChangedAA.append(aa)
-                        fractionsDic.update({aa: aa_data})
-                        changedSeqDic.update({originalCodon: v})
-                    elif k == Optimizedcodon:
-                        changedOpDic.update({Optimizedcodon: v})
-    freqDiff = []
-    getcontext().prec = 2
-    for i, j in zip(range(0, len(listOfOldCodons)), range(0, len(listOfOPcodons))):
-        freqDiff.append(Decimal(changedOpDic[listOfOPcodons[j]]) - Decimal(changedSeqDic[listOfOldCodons[i]]))
-    fig = go.Figure(data=[go.Table(
-        header=dict(
-            values=['<b>#</b>', '<b>POS</b>', '<b>Old</b>', '<b>New</b>', '<b>diff</b>', '<b>amino</b>',
-                    '<b>Fractions</b>'],
-            line_color='lightgrey',
-            fill_color=headerColor,
-            align=['center', 'center'],
-            font=dict(color='black', size=11)
-        ),
-        cells=dict(
-            values=[
-                [i for i in range(1, counter + 1)],
-                [listOfIndexes [i] for i in range(0, len(listOfIndexes ))],
-                [listOfOldCodons[i] for i in range(0, len(listOfOldCodons))],
-                [listOfOPcodons[i] for i in range(0, len(listOfOPcodons))],
-                [freqDiff[i] for i in range(0, len(freqDiff))],
-                [listOfChangedAA[i] for i in range(0, len(listOfChangedAA))],
-                [str(v) for i in listOfChangedAA for k, v in updatedTable.items() if i == k]],
-            line_color='lightgrey',
-            # 2-D list of colors for alternating rows
-            # fill_color = [[rowOddColor,rowEvenColor,rowOddColor, rowEvenColor,rowOddColor]*5],
-            align=['center', 'center'],
-            font=dict(color='darkslategray', size=11)
-        ))
-    ])
 
-    return fig.show()
-'''
 #Draw changes Table
 def changesTable(sequence,OPSeq):
     listOfOldCodons = []
@@ -220,3 +162,64 @@ if __name__ == '__main__':
   print("Changes Table in details: \n")
   print(changesTable(sequence,OptimizedCodon))
   file.close()
+
+
+#Another way to produce Changes Table in details
+'''def changesTable(sequence,OPSeq):
+    headerColor = 'white'
+    listOfOldCodons = []
+    listOfOPcodons = []
+    listOfChangedAA = []  # changed amino acids
+    fractionsDic = {}  # fractions
+    changedSeqDic = {}  # changed seq codons
+    changedOpDic = {}  # changed optimized codons
+    listOfIndexes = []  # index of optimized codons
+    counter = 0
+    for i, j in zip(range(0, len(sequence), 3), range(0, len(OPSeq), 3)):
+        originalCodon = sequence[i:i + 3]
+        Optimizedcodon = OPSeq[j:j + 3]
+        if originalCodon != Optimizedcodon:
+            listOfIndexes.append(i + 1)
+            counter += 1
+            listOfOldCodons.append(originalCodon)
+            listOfOPcodons.append(Optimizedcodon)
+            for aa, aa_data in updatedTable.items():
+                for k, v in aa_data.items():
+                    if k == originalCodon:
+                        listOfChangedAA.append(aa)
+                        fractionsDic.update({aa: aa_data})
+                        changedSeqDic.update({originalCodon: v})
+                    elif k == Optimizedcodon:
+                        changedOpDic.update({Optimizedcodon: v})
+    freqDiff = []
+    getcontext().prec = 2
+    for i, j in zip(range(0, len(listOfOldCodons)), range(0, len(listOfOPcodons))):
+        freqDiff.append(Decimal(changedOpDic[listOfOPcodons[j]]) - Decimal(changedSeqDic[listOfOldCodons[i]]))
+    fig = go.Figure(data=[go.Table(
+        header=dict(
+            values=['<b>#</b>', '<b>POS</b>', '<b>Old</b>', '<b>New</b>', '<b>diff</b>', '<b>amino</b>',
+                    '<b>Fractions</b>'],
+            line_color='lightgrey',
+            fill_color=headerColor,
+            align=['center', 'center'],
+            font=dict(color='black', size=11)
+        ),
+        cells=dict(
+            values=[
+                [i for i in range(1, counter + 1)],
+                [listOfIndexes [i] for i in range(0, len(listOfIndexes ))],
+                [listOfOldCodons[i] for i in range(0, len(listOfOldCodons))],
+                [listOfOPcodons[i] for i in range(0, len(listOfOPcodons))],
+                [freqDiff[i] for i in range(0, len(freqDiff))],
+                [listOfChangedAA[i] for i in range(0, len(listOfChangedAA))],
+                [str(v) for i in listOfChangedAA for k, v in updatedTable.items() if i == k]],
+            line_color='lightgrey',
+            # 2-D list of colors for alternating rows
+            # fill_color = [[rowOddColor,rowEvenColor,rowOddColor, rowEvenColor,rowOddColor]*5],
+            align=['center', 'center'],
+            font=dict(color='darkslategray', size=11)
+        ))
+    ])
+
+    return fig.show()
+'''
