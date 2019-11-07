@@ -15,6 +15,6 @@ Repository that contains simple python script for DNA analysis, specifically:
 * We usually use codons tables from http://www.kazusa.or.jp/
 ## Usage
 * Just type Fasta file name and codon table URL 
-* attached an example for fasta files called sequence.fasta 
+* attached an example for fasta files called "sequence.fasta" 
 
 
