@@ -3,7 +3,7 @@ import urllib.request
 from decimal import Decimal, getcontext
 import plotly.graph_objects as go
 from prettytable import PrettyTable
-
+import argparse
 
 #Parse Fasta File:
 def parse_fasta(inputFile):
@@ -204,23 +204,31 @@ def changesTable(sequence,OPSeq):
 
     return fig.show()
 '''
+                    
+def Main():
+    #to enter a list "nargs='+'"
+    parser=argparse.ArgumentParser(description ='Codon Optimizing Process')
+    parser.add_argument("fasta_file_path",nargs='?',help="Enter Fasta file path... ", type=argparse.FileType('r'),default=sys.stdin)
+    parser.add_argument("usage_bias_url",help="Paste Codon Usage Bias Table (Standard Format)",type=str)
+    parser.add_argument("-o","--output",help="Output optimized sequence to a file. ",action="store_true")
+    args=parser.parse_args()
+    sequence=parse_fasta(args.fasta_file_path)
+    proteinSeq = DNA_translation(sequence)
+    print("Sequences before and after optimization: \n", "Protein Sequence: \n",proteinSeq)
+    print("Original Sequence [FASTA]: \n",sequence)
+    codonsTable = download_codons_table(args.usage_bias_url)
+    OptimizedCodon = translateOptimizedSeq(proteinSeq)
+    print("Optimized Sequence [FASTA]: \n",OptimizedCodon)
+    print("Changes Table in details: \n")
+    if args.output:
+        f=open("optimizedSequence.txt","a")
+        f.write(OptimizedCodon)
+    print("Changes Table in details: \n")
+    print(changesTable(sequence,OptimizedCodon))
 
 if __name__ == '__main__':
-  #_kazusa_url = ("http://www.kazusa.or.jp/codon/cgi-bin/showcodon.cgi?species=9031&aa=15&style=N")
-  fileName=input("Enter FASTA Sequence :")
-  file = open(fileName, 'r')
-  sequence=parse_fasta(file)
-  proteinSeq = DNA_translation(sequence)
-  _kazusa_url = input("Paste Codon Usage Bias Table (Standard Format) : ")
-  print("Sequences before and after optimization: \n", "Protein Sequence: \n",proteinSeq)
-  print("Original Sequence [FASTA]: \n",sequence)
-  codonsTable = download_codons_table(_kazusa_url)
-  updatedTable = U_replaced_by_T(codonsTable)
-  OptimizedCodon = translateOptimizedSeq(proteinSeq)
-  print("Optimized Sequence [FASTA]: \n",OptimizedCodon)
-  print("Changes Table in details: \n")
-  print(changesTable(sequence,OptimizedCodon))
-  file.close()
+    Main()
+  
 
 
 
