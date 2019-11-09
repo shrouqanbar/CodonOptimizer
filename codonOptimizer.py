@@ -2,20 +2,24 @@ import re
 import urllib.request
 from decimal import Decimal, getcontext
 import plotly.graph_objects as go
-from prettytable import PrettyTable
+from urllib.error import URLError
+#from prettytable import PrettyTable
 import argparse
+import sys
+import os.path
+
 
 #Parse Fasta File:
 def parse_fasta(inputFile):
     # The first line in a FASTA record is the title line.
-    first_line = file.readline()
+    first_line = inputFile.readline()
     # Double-check that it's a FASTA file by looking for the '>'.
     if not first_line.startswith(">"):
         raise TypeError("Not a FASTA file: %r" % first_line)
     # Read the sequence lines
     sequence_lines = []
     while 1:
-        line = file.readline().rstrip()
+        line = inputFile.readline().rstrip()
         # Reached the end of the record or end of the file
         if line == "":
             break
@@ -64,15 +68,22 @@ def csv_data_to_codons_dict(csv_string):
 urlopen = urllib.request.urlopen
 def download_codons_table(fileURL):
     codonRegexpr = r"([ATGCU]{3}) ([A-Z]|\*) (\d.\d+)"
-    html_content = urlopen(fileURL).read().decode().replace("\n", " ")  # all the page in HTML
-    # print(html_content)
-    csv_data = "\n".join(["amino_acid,codon,frequency"] + sorted([
+
+    try:
+        html_content = urlopen(fileURL).read().decode().replace("\n", " ")  # all the page in HTML
+    except URLError as e:
+        print('Invalid URL ')
+        print('Reason: ', e.reason)
+        sys.exit()
+    else:
+        csv_data = "\n".join(["amino_acid,codon,frequency"] + sorted([
         "%s,%s,%s" % (aa, codon, freq)
         for codon, aa, freq in re.findall(codonRegexpr, html_content)
 
     ]))
+        return csv_data_to_codons_dict(csv_data)
 
-    return csv_data_to_codons_dict(csv_data)
+
 
 #To replace U by T
 def U_replaced_by_T(table):
@@ -86,24 +97,24 @@ def U_replaced_by_T(table):
 #new Dictionary wirh heighest frequencies
 def UpdatedDic(table):
     dic = {}
-    for d_aa, d_codon in updatedTable.items():
+    for d_aa, d_codon in table.items():
         s = max(d_codon.values())
         for (key, value) in d_codon.items():
             if value == s:
                 dic.update({d_aa: key})
     return dic
 
-def translateOptimizedSeq(protein):
+def translateOptimizedSeq(protein,table):
     OPSeq = ""
     for i in range(0, len(protein)):
         amino = protein[i]
-        OPSeq += UpdatedDic(updatedTable)[amino]
+        OPSeq += UpdatedDic(table)[amino]
     return OPSeq
 
 
 
-#Print changes Table in console 
-def changesTable(sequence,OPSeq):
+#Print changes Table in console
+'''def changesTable(sequence,OPSeq,table):
     listOfOldCodons = []
     listOfOPcodons = []
     listOfChangedAA = []  # changed amino acids
@@ -120,7 +131,7 @@ def changesTable(sequence,OPSeq):
             counter += 1
             listOfOldCodons.append(originalCodon)
             listOfOPcodons.append(Optimizedcodon)
-            for aa, aa_data in updatedTable.items():
+            for aa, aa_data in table.items():
                 for k, v in aa_data.items():
                     if k == originalCodon:
                         listOfChangedAA.append(aa)
@@ -133,7 +144,7 @@ def changesTable(sequence,OPSeq):
     for i, j in zip(range(0, len(listOfOldCodons)), range(0, len(listOfOPcodons))):
         freqDiff.append(Decimal(changedOpDic[listOfOPcodons[j]]) - Decimal(changedSeqDic[listOfOldCodons[i]]))
     x = PrettyTable()
-    column_names = ["#", "POS", "Old", "New","diff,"amino","Fractions"]
+    column_names = ["#", "POS", "Old", "New","diff","amino","Fractions"]
     x.add_column(column_names[0], [i for i in range(1, counter+1)])
     x.add_column(column_names[1], [listOfIndexes [i] for i in range(0, len(listOfIndexes ))])
     x.add_column(column_names[2], [listOfOldCodons[i] for i in range(0, len(listOfOldCodons))])
@@ -143,10 +154,10 @@ def changesTable(sequence,OPSeq):
     x.add_column(column_names[6], [str(v) for i in listOfChangedAA for k, v in updatedTable.items() if i == k])
     print(x)
 #html output
-#print(x.get_html_string())
+#print(x.get_html_string())'''
 
 #Another way to draw Changes Table in details
-'''def changesTable(sequence,OPSeq):
+def changesTable(sequence,OPSeq,table):
     headerColor = 'white'
     listOfOldCodons = []
     listOfOPcodons = []
@@ -164,7 +175,7 @@ def changesTable(sequence,OPSeq):
             counter += 1
             listOfOldCodons.append(originalCodon)
             listOfOPcodons.append(Optimizedcodon)
-            for aa, aa_data in updatedTable.items():
+            for aa, aa_data in table.items():
                 for k, v in aa_data.items():
                     if k == originalCodon:
                         listOfChangedAA.append(aa)
@@ -193,42 +204,44 @@ def changesTable(sequence,OPSeq):
                 [listOfOPcodons[i] for i in range(0, len(listOfOPcodons))],
                 [freqDiff[i] for i in range(0, len(freqDiff))],
                 [listOfChangedAA[i] for i in range(0, len(listOfChangedAA))],
-                [str(v) for i in listOfChangedAA for k, v in updatedTable.items() if i == k]],
+                [str(v) for i in listOfChangedAA for k, v in table.items() if i == k]],
             line_color='lightgrey',
-            # 2-D list of colors for alternating rows
-            # fill_color = [[rowOddColor,rowEvenColor,rowOddColor, rowEvenColor,rowOddColor]*5],
             align=['center', 'center'],
             font=dict(color='darkslategray', size=11)
         ))
     ])
-
     return fig.show()
-'''
-                    
+
+#if file does not exist
+def is_valid_file(parser, arg):
+    if not os.path.exists(arg):
+        parser.error("The file %s does not exist!" % arg)
+    else:
+        return open(arg, 'r')  # return an open file handle
 def Main():
-    #to enter a list "nargs='+'"
-    parser=argparse.ArgumentParser(description ='Codon Optimizing Process')
-    parser.add_argument("fasta_file_path",nargs='?',help="Enter Fasta file path... ", type=argparse.FileType('r'),default=sys.stdin)
-    parser.add_argument("usage_bias_url",help="Paste Codon Usage Bias Table (Standard Format)",type=str)
-    parser.add_argument("-o","--output",help="Output optimized sequence to a file. ",action="store_true")
-    args=parser.parse_args()
-    sequence=parse_fasta(args.fasta_file_path)
-    proteinSeq = DNA_translation(sequence)
-    print("Sequences before and after optimization: \n", "Protein Sequence: \n",proteinSeq)
-    print("Original Sequence [FASTA]: \n",sequence)
+    # to enter a list "nargs='+'"
+    parser = argparse.ArgumentParser(description='Codon Optimizing Process')
+    parser.add_argument("fasta_file_path", nargs='?', help="Enter Fasta file path... ", type=lambda x: is_valid_file(parser, x),
+                        default=sys.stdin)
+    parser.add_argument("usage_bias_url", help="Paste Codon Usage Bias Table (Standard Format)", type=str)
+    parser.add_argument("-o", "--output", help="Output optimized sequence to a file. ", action="store_true")
+    args = parser.parse_args()
     codonsTable = download_codons_table(args.usage_bias_url)
-    OptimizedCodon = translateOptimizedSeq(proteinSeq)
-    print("Optimized Sequence [FASTA]: \n",OptimizedCodon)
-    print("Changes Table in details: \n")
+
+    #DISPLAY OUTPUT
+    sequence = parse_fasta(args.fasta_file_path)
+    proteinSeq = DNA_translation(sequence)
+    print("Sequences before and after optimization: \n", "Protein Sequence: \n", proteinSeq)
+    print("Original Sequence [FASTA]: \n", sequence)
+    updatedTable = U_replaced_by_T(codonsTable)
+    OptimizedCodon = translateOptimizedSeq(proteinSeq,updatedTable)
+    print("Optimized Sequence [FASTA]: \n", OptimizedCodon)
+    changesTable(sequence, OptimizedCodon, updatedTable)
     if args.output:
-        f=open("optimizedSequence.txt","a")
+        f = open("optimizedSequence.txt", "a")
         f.write(OptimizedCodon)
-    print("Changes Table in details: \n")
-    print(changesTable(sequence,OptimizedCodon))
+        print("Optimized sequence printed to 'optimizedSequence.txt' file..")
+    #print("Changes Table in details: \n")
 
 if __name__ == '__main__':
     Main()
-  
-
-
-
